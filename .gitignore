@@ -107,4 +107,4 @@ ENV/
 .idea/
 git_ignore
 data
-model.p
+model_data.p

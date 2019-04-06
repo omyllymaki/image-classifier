@@ -6,12 +6,6 @@ import torch
 logger = logging.getLogger(__name__)
 
 
-def freeze_model_parameters(model):
-    for param in model.parameters():
-        param.requires_grad = False
-    return model
-
-
 def make_batches(items, batch_size=1, shuffle_option=True):
     if shuffle_option:
         shuffle(items)

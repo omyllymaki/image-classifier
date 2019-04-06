@@ -10,7 +10,7 @@ def get_sub_folder_names(dir_path: str) -> List[str]:
 
 
 def get_file_names(dir_path: str, file_extension: str) -> List[str]:
-    file_names = [name for name in os.listdir(dir_path)
+    file_names = [os.path.join(dir_path, name) for name in os.listdir(dir_path)
                   if name.endswith(file_extension)]
     return file_names
 

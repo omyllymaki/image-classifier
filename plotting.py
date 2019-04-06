@@ -24,4 +24,4 @@ def visualize_prediction(image, true_label, labels_predicted, probabilities_pred
     plt.grid()
     plt.subplot(1, 2, 2)
     plt.imshow(np.array(image))
-    plt.title(true_label)
+    plt.title(f' True label: {true_label}')
