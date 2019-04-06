@@ -24,21 +24,31 @@ def update_weights(optimizer, loss):
     optimizer.step()
 
 
-def fit_model(training_data,
+def fit_model(data,
               model,
               batch_size=1,
               epochs=1,
               image_transforms=None,
               loss_function=None,
-              optimizer=None):
+              optimizer=None,
+              early_stop_option=True):
     if not loss_function:
         loss_function = torch.nn.NLLLoss()
     if not optimizer:
         optimizer = torch.optim.Adam(model.parameters())
 
+    training_data = data.training_data
+    validation_data = data.validation_data
+    x_valid = [d['x'] for d in validation_data]
+    y_valid = [d['y'] for d in validation_data]
     indices = list(range(len(training_data)))
 
-    losses = []
+    if image_transforms:
+        x_valid = apply_transforms_to_images(x_valid, image_transforms['validation'])
+    x_valid = torch.stack(x_valid)
+    y_valid = torch.Tensor(y_valid).long()
+
+    losses, validation_losses = [], []
     for epoch in range(epochs):
         batches = make_batches(indices, batch_size=batch_size)
         number_of_batches = int(len(indices) / batch_size)
@@ -49,7 +59,7 @@ def fit_model(training_data,
             y_batch = [d['y'] for d in batch_data]
 
             if image_transforms:
-                x_batch = apply_transforms_to_images(x_batch, image_transforms)
+                x_batch = apply_transforms_to_images(x_batch, image_transforms['training'])
 
             x_batch = torch.stack(x_batch)
             y_batch = torch.Tensor(y_batch).long()
@@ -65,4 +75,17 @@ def fit_model(training_data,
             Batch: {batch_index}/{number_of_batches}
             Training loss: {loss.item()}''')
 
-    return model, losses
+        with torch.no_grad():
+            y_predicted_valid = model(x_valid)
+            loss_valid = loss_function(y_predicted_valid, y_valid)
+        validation_losses.append(loss_valid)
+        logger.info(f'''
+                    Epoch: {epoch+1}/{epochs}
+                    Validation loss: {loss_valid.item()}''')
+
+        if epoch > 1 and early_stop_option:
+            if validation_losses[-1] > validation_losses[-2]:
+                logger.info('Early stop criterion filled; fitting completed!')
+                return model, losses, validation_losses
+
+    return model, losses, validation_losses
