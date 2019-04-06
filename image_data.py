@@ -32,7 +32,7 @@ class ImageData:
         n_validation = int(p_validation * n_images)
 
         indices_train = indices[:n_train]
-        indices_validation = indices[:n_train:n_train + n_validation]
+        indices_validation = indices[n_train:n_train + n_validation]
         indices_test = indices[n_train + n_validation:]
 
         self.training_data = [self.image_data[i] for i in indices_train]
