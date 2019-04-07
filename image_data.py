@@ -1,3 +1,4 @@
+from math import floor
 from random import shuffle
 from typing import List
 
@@ -7,12 +8,13 @@ class ImageData:
     def __init__(self,
                  image_data: List[dict],
                  p_training: float = 0.5,
-                 p_valid: float = 0.3
+                 p_valid: float = 0.25,
+                 p_test: float = 0.25,
                  ):
         self.image_data = image_data
         self.get_label_mappings()
         self.convert_labels_to_integers()
-        self.divide_data_to_sets(p_training, p_valid)
+        self.divide_data_to_sets(p_training, p_valid, p_test)
 
     def make_batches(self, data_set_name, batch_size):
         self.data = self.get_data_set(data_set_name)
@@ -27,25 +29,30 @@ class ImageData:
         return batch_images, batch_classes
 
     def convert_labels_to_integers(self):
+        image_data = []
         for item in self.image_data:
-            item['y'] = self.label_to_class_mapping[item['y']]
+            x = item['x']
+            y = self.label_to_class_mapping[item['y']]
+            image_data.append(dict(x=x, y=y))
+        self.image_data = image_data
 
     def get_label_mappings(self):
         self.labels = list(set([sample['y'] for sample in self.image_data]))
         self.label_to_class_mapping = {label: idx for idx, label in enumerate(self.labels)}
         self.class_to_label_mapping = {v: k for k, v in self.label_to_class_mapping.items()}
 
-    def divide_data_to_sets(self, p_training: float, p_validation: float):
+    def divide_data_to_sets(self, p_training: float, p_validation: float, p_test: float):
         n_images = len(self.image_data)
         indices = list(range(n_images))
         shuffle(indices)
 
-        n_train = int(p_training * n_images)
-        n_validation = int(p_validation * n_images)
+        n_train = floor(p_training * n_images)
+        n_validation = floor(p_validation * n_images)
+        n_test = floor(p_test * n_images)
 
         indices_train = indices[:n_train]
         indices_validation = indices[n_train:n_train + n_validation]
-        indices_test = indices[n_train + n_validation:]
+        indices_test = indices[n_train + n_validation:n_train + n_validation + n_test]
 
         self.training_data = [self.image_data[i] for i in indices_train]
         self.validation_data = [self.image_data[i] for i in indices_validation]
