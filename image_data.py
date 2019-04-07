@@ -14,6 +14,18 @@ class ImageData:
         self.convert_labels_to_integers()
         self.divide_data_to_sets(p_training, p_valid)
 
+    def make_batches(self, data_set_name, batch_size):
+        self.data = self.get_data_set(data_set_name)
+        indices = list(range(len(self.data)))
+        batches = self._make_batches(indices, batch_size=batch_size)
+        return batches
+
+    def get_batch_data(self, batch):
+        batch_data = [self.data[i] for i in batch]
+        batch_images = [d['x'] for d in batch_data]
+        batch_classes = [d['y'] for d in batch_data]
+        return batch_images, batch_classes
+
     def convert_labels_to_integers(self):
         for item in self.image_data:
             item['y'] = self.label_to_class_mapping[item['y']]
@@ -88,3 +100,11 @@ class ImageData:
     @staticmethod
     def _get_image(data, index):
         return data[index]['x']
+
+    @staticmethod
+    def _make_batches(items, batch_size=1, shuffle_option=True):
+        if shuffle_option:
+            shuffle(items)
+        length = len(items)
+        for index in range(0, length, batch_size):
+            yield items[index:min(index + batch_size, length)]
