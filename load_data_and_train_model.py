@@ -21,7 +21,8 @@ learner = Learner(model)
 model, losses, losses_valid = learner.fit_model(image_data,
                                                 batch_size=BATCH_SIZE,
                                                 epochs=EPOCHS,
-                                                image_transforms=IMAGE_TRANSFORMS,
+                                                image_transforms_training=IMAGE_TRANSFORMS['training'],
+                                                image_transforms_validation=IMAGE_TRANSFORMS['validation'],
                                                 early_stop_option=True)
 
 data = {
