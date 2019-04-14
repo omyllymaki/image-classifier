@@ -26,8 +26,7 @@ def visualize_prediction(image, true_label, labels_predicted, probabilities_pred
     show_image(image, f' True label: {true_label}')
 
 
-def show_image(image, title=None, figure_size=(8,8)):
-    plt.figure(figsize=figure_size)
+def show_image(image, title=None):
     image = plt.imshow(np.asarray(image))
     plt.axis('off')
     if title:

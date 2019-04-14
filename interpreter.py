@@ -1,8 +1,10 @@
 from typing import Dict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+
+from plotting import show_image
 
 
 class Interpreter:
@@ -82,7 +84,7 @@ class Interpreter:
         indices = np.argsort(propabilities)[-n_classes:]
         propabilities = propabilities[indices]
         labels = np.array(list(self.mapper.values()))[indices]
-        image_array = np.array(self.images[sample])
+        image = self.images[sample]
         true_label = self.y_true_labels[sample]
 
         plt.figure()
@@ -90,8 +92,7 @@ class Interpreter:
         plt.barh(labels, propabilities)
         plt.grid()
         plt.subplot(1, 2, 2)
-        plt.imshow(image_array)
-        plt.title(f' True label: {true_label}')
+        show_image(image, f' True label: {true_label}')
 
     def plot_most_incorrect_samples(self, n_samples: int):
         samples = self.get_most_incorrect_samples(n_samples).index
