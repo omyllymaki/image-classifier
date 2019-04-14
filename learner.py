@@ -32,7 +32,7 @@ class Learner:
         y_valid = data.get_classes('validation')
         if image_transforms:
             image_transforms_validation = image_transforms.get('validation')
-            image_transforms_training = image_transforms.get('validation')
+            image_transforms_training = image_transforms.get('training')
 
         if image_transforms_validation:
             x_valid = self.apply_transforms_to_images(x_valid, image_transforms_validation)
