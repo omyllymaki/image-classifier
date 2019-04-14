@@ -19,9 +19,17 @@ def imshow_tensor(image, ax=None, mean=0, std=1):
 
 
 def visualize_prediction(image, true_label, labels_predicted, probabilities_predicted):
-    plt.subplot(1,2,1)
+    plt.subplot(1, 2, 1)
     plt.barh(labels_predicted, probabilities_predicted)
     plt.grid()
     plt.subplot(1, 2, 2)
-    plt.imshow(np.array(image))
-    plt.title(f' True label: {true_label}')
+    show_image(image, f' True label: {true_label}')
+
+
+def show_image(image, title=None, figure_size=(8,8)):
+    plt.figure(figsize=figure_size)
+    image = plt.imshow(np.asarray(image))
+    plt.axis('off')
+    if title:
+        plt.title(title)
+    return image
