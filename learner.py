@@ -1,7 +1,6 @@
 import logging
 
 import torch
-from torchvision import transforms
 
 from image_data import ImageData
 
@@ -21,18 +20,14 @@ class Learner:
 
     def fit_model(self,
                   data: ImageData,
+                  image_transforms_training,
+                  image_transforms_validation,
                   batch_size=1,
                   epochs=1,
-                  image_transforms_training=None,
-                  image_transforms_validation=None,
                   early_stop_option=True):
 
         self.early_stop_option = early_stop_option
         self.epochs = epochs
-        if not image_transforms_training:
-            image_transforms_training = transforms.ToTensor()
-        if not image_transforms_validation:
-            image_transforms_validation = transforms.ToTensor()
 
         x_valid, y_valid = self.prepare_validation_data(data, image_transforms_validation)
 
