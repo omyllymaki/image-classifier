@@ -1,6 +1,7 @@
 IMAGE_NET_MEAN = [0.485, 0.456, 0.406]
 IMAGE_NET_STD = [0.229, 0.224, 0.225]
-MODEL_FILE_PATH = 'model_data.p'
+MODEL_FILE_PATH = 'model.p'
+IMAGE_DATA_PATH = 'image_data.p'
 SOURCE_DATA_PATH = 'data'
 P_TRAINING = 0.5
 P_VALID = 0.25

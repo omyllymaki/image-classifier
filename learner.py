@@ -1,5 +1,7 @@
 import logging
+from typing import Tuple
 
+import numpy as np
 import torch
 
 from image_data import ImageData
@@ -26,6 +28,7 @@ class Learner:
                   epochs=1,
                   early_stop_option=True):
 
+        self.class_to_label_mapping = data.class_to_label_mapping
         self.early_stop_option = early_stop_option
         self.epochs = epochs
 
@@ -46,9 +49,9 @@ class Learner:
 
             if self.is_stop_criteria_filled():
                 logger.info('Early stop criterion filled; fitting completed!')
-                return self.model, self.losses, self.validation_losses
+                return self.losses, self.validation_losses
 
-        return self.model, self.losses, self.validation_losses
+        return self.losses, self.validation_losses
 
     def calculate_training_loss(self, x_batch, y_batch):
         y_predicted = self.model(x_batch)
@@ -97,6 +100,18 @@ class Learner:
         if self.epoch < 2:
             return False
         return self.validation_losses[-1] > self.validation_losses[-2]
+
+    def predict(self, images: list, transforms) -> Tuple[np.ndarray, np.ndarray]:
+        predicted_classes, probabilities = [], []
+        for image in images:
+            image = transforms(image)
+            image = image.unsqueeze(0)
+            prediction = self.model(image)
+            prob = torch.exp(prediction).detach().numpy()[0]
+            predicted_class = np.argmax(prob, axis=0)
+            predicted_classes.append(predicted_class)
+            probabilities.append(prob)
+        return np.array(predicted_classes), np.array(probabilities)
 
     @staticmethod
     def apply_transforms_to_images(images, transforms):
