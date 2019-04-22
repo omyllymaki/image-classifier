@@ -2,11 +2,9 @@ import logging
 import os
 import shutil
 
-from PIL import Image
-
+from data_loader import DataLoader
 from file_io import load_pickle_file
 from image_transforms import IMAGE_TRANSFORMS
-from utils import get_file_paths
 
 logger = logging.getLogger(__name__)
 
@@ -24,15 +22,16 @@ def classify_images(model_path: str = 'model.p',
     logger.debug(f'Target path: {target_path}')
 
     model = load_pickle_file(model_path)
-    file_paths = get_file_paths(source_path, file_type)
 
     logger.info('Start image loading')
-    images = load_images(file_paths)
+    loader = DataLoader()
+    images = loader.get_image_data(source_path, file_type)
 
     logger.info('Start image classification')
     predicted_classes, probabilities = model.predict(images, IMAGE_TRANSFORMS['test'])
 
     logger.info('Copy images to target path')
+    file_paths = loader._get_file_paths(source_path, file_type)
     for file_path, predicted_class in zip(file_paths, predicted_classes):
         label = model.class_to_label_mapping[predicted_class]
         path = os.path.join(target_path, label)
@@ -42,14 +41,3 @@ def classify_images(model_path: str = 'model.p',
 
     logger.info('Image classification finished')
     logger.info(f'Classified images saved to folder: {target_path}')
-
-
-def load_images(file_paths):
-    n_files = len(file_paths)
-    images = []
-    for index, file_path in enumerate(file_paths, 1):
-        logger.info(f'{index}/{n_files} images loaded')
-        image = Image.open(file_path)
-        images.append(image.copy())
-        image.close()
-    return images

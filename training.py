@@ -17,7 +17,7 @@ def train_model(source_data_path: str = 'data',
                 early_stop_option: bool = True):
     logger.info('Start data loading')
     data_loader = DataLoader()
-    data = data_loader.get_labeled_data(source_data_path)
+    data = data_loader.get_labeled_image_data(source_data_path)
 
     image_data = ImageData(data, 0.7, 0.3, 0)
 
