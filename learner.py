@@ -28,6 +28,7 @@ class Learner:
                   epochs=1,
                   early_stop_option=True):
 
+        self.set_traininig_mode()
         self.class_to_label_mapping = data.class_to_label_mapping
         self.early_stop_option = early_stop_option
         self.epochs = epochs
@@ -83,11 +84,13 @@ class Learner:
                 Training loss: {self.loss.item()}''')
 
     def calculate_validation_loss(self, x_valid, y_valid):
+        self.set_evaluation_mode()
         with torch.no_grad():
             y_predicted_valid = self.model(x_valid)
             loss_valid = self.loss_function(y_predicted_valid, y_valid)
         self.loss_valid = loss_valid
         self.validation_losses.append(self.loss_valid.item())
+        self.set_traininig_mode()
 
     def update_weights(self):
         self.optimizer.zero_grad()
@@ -102,6 +105,7 @@ class Learner:
         return self.validation_losses[-1] > self.validation_losses[-2]
 
     def predict(self, images: list, transforms) -> Tuple[np.ndarray, np.ndarray]:
+        self.set_evaluation_mode()
         predicted_classes, probabilities = [], []
         for image in images:
             image = transforms(image)
@@ -112,6 +116,13 @@ class Learner:
             predicted_classes.append(predicted_class)
             probabilities.append(prob)
         return np.array(predicted_classes), np.array(probabilities)
+
+    def set_traininig_mode(self):
+        self.model.train()
+
+    def set_evaluation_mode(self):
+        # E.g. disables dropout
+        self.model.eval()
 
     @staticmethod
     def apply_transforms_to_images(images, transforms):
