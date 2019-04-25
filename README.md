@@ -2,6 +2,33 @@
 
 Photo classifier based on pretrained CNN model and transfer learning.
 
+Currently supports only single-class classification.
+
+You can test classifier by downloading set of Google images.
+
+## Downloading Google images
+
+If you want to download more than 100 images per keyword, then 
+you will need to download chromedriver. You can get if from here:
+
+https://sites.google.com/a/chromium.org/chromedriver/downloads
+
+Download correct driver and move it to root directory of this repository.
+
+Run download_google_images.py script to get images for classification task. This
+will create data folder containing images of specified image classes. By default, the
+script will load images of teddybears, grizzly bears and black bears.
+
+## Notebooks
+
+**model_training.ipynb**
+
+Loads image data and trains CNN model. Saves trained model as pickle file.
+
+**model_evaluation.ipynb**
+
+Loads trained model and evaluates results and performance of the model using holdout test set.
+
 ## CLI app
 
 Simple CLI app for training model and classifying images.
