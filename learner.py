@@ -100,7 +100,7 @@ class Learner:
     def is_stop_criteria_filled(self):
         if not self.early_stop_option:
             return False
-        if self.epoch < 2:
+        if self.epoch < 1:
             return False
         return self.validation_losses[-1] > self.validation_losses[-2]
 
