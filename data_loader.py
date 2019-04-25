@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 from typing import List, Dict
@@ -32,30 +33,43 @@ class DataLoader:
             file_names[folder_name] = self._get_file_paths(folder_path, file_extension)
         return file_names
 
-    @staticmethod
-    def _load_images_from_file_paths_by_label(file_paths_by_label: Dict[str, List[str]]):
+    def _load_images_from_file_paths_by_label(self, file_paths_by_label: Dict[str, List[str]]):
         data = []
         for label, file_paths in file_paths_by_label.items():
             for file_path in file_paths:
-                image = Image.open(file_path)
-                n_dimensions = len(np.array(image).shape)
-                if n_dimensions == 3:
+                image = self._open_image(file_path)
+                if self._is_image_valid(image):
                     data.append({'x': image.copy(), 'y': label})
-                image.close()
         return data
 
-    @staticmethod
-    def _load_images_from_file_paths(file_paths: List[str]):
+    def _load_images_from_file_paths(self, file_paths: List[str]):
         n_files = len(file_paths)
         images = []
         for index, file_path in enumerate(file_paths, 1):
-            image = Image.open(file_path)
-            n_dimensions = len(np.array(image).shape)
-            if n_dimensions == 3:
+            image = self._open_image(file_path)
+            if self._is_image_valid(image):
                 images.append(image.copy())
-            image.close()
             logger.info(f'{index}/{n_files} images loaded')
         return images
+
+    @staticmethod
+    def _is_image_valid(image):
+        n_dimensions = len(np.array(image).shape)
+        if n_dimensions != 3:
+            return False
+        n_channels = np.array(image).shape[2]
+        if n_channels != 3:
+            return False
+        return True
+
+    @staticmethod
+    def _open_image(file_path):
+        with open(file_path, 'rb') as f:
+            try:
+                image = Image.open(io.BytesIO(f.read()))
+            except OSError:
+                image = None
+        return image
 
     @staticmethod
     def _get_sub_folder_names(dir_path: str) -> List[str]:
