@@ -2,9 +2,9 @@
 
 Photo classifier based on pretrained CNN model and transfer learning.
 
-Currently supports only single-class classification.
+Currently supports only single-label classification.
 
-You can test classifier by downloading set of Google images.
+You can train your own classifier by downloading set of Google images for the target task.
 
 ## Downloading Google images
 
