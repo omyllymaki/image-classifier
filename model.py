@@ -8,11 +8,11 @@ def freeze_model_parameters(model):
     return model
 
 
-def classifier(n_inputs: int, n_outputs: int):
+def classifier(n_inputs: int, n_outputs: int, dropout: float = 0.4):
     return nn.Sequential(
         nn.Linear(n_inputs, 256),
         nn.ReLU(),
-        nn.Dropout(0.4),
+        nn.Dropout(dropout),
         nn.Linear(256, n_outputs),
         nn.LogSoftmax(dim=1)
     )
