@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple
+from typing import Tuple, Callable
 
 import numpy as np
 import torch
@@ -13,12 +13,13 @@ class Learner:
 
     def __init__(self,
                  model,
-                 loss_function=torch.nn.NLLLoss,
-                 optimizer=torch.optim.Adam):
+                 loss_function: Callable = torch.nn.NLLLoss,
+                 optimizer_function: Callable = torch.optim.Adam):
         self.model = model
         self.loss_function = loss_function()
-        self.optimizer = optimizer(model.parameters())
+        self.optimizer_function = optimizer_function
         self.epoch = None
+        self.batch_index = None
 
     def fit_model(self,
                   data: ImageData,
@@ -26,8 +27,11 @@ class Learner:
                   image_transforms_validation,
                   batch_size=1,
                   epochs=1,
+                  learning_rate: float = 0.001,
+                  weight_decay: float = 0.01,
                   early_stop_option=True):
 
+        self.optimizer = self.optimizer_function(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         self.set_traininig_mode()
         self.class_to_label_mapping = data.class_to_label_mapping
         self.early_stop_option = early_stop_option
@@ -73,15 +77,17 @@ class Learner:
         return x_valid, y_valid
 
     def log_epoch(self):
-        logger.info(f'''
-                        Epoch: {self.epoch+1}/{self.epochs}
-                        Validation loss: {self.loss_valid.item()}''')
+        logger.info(
+            f'''
+            Epoch: {self.epoch + 1}/{self.epochs}
+            Validation loss: {self.loss_valid.item()}''')
 
     def log_batch(self):
-        logger.debug(f'''
-                Epoch: {self.epoch+1}/{self.epochs}
-                Batch: {self.batch_index}
-                Training loss: {self.loss.item()}''')
+        logger.debug(
+            f'''
+            Epoch: {self.epoch + 1}/{self.epochs}
+            Batch: {self.batch_index}
+            Training loss: {self.loss.item()}''')
 
     def calculate_validation_loss(self, x_valid, y_valid):
         self.set_evaluation_mode()
