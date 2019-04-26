@@ -98,3 +98,8 @@ class Interpreter:
         samples = self.get_most_incorrect_samples(n_samples).index
         for sample in samples:
             self.plot_prediction(sample)
+
+    def plot_most_uncertain_samples(self, n_samples: int):
+        samples = self.get_most_uncertain_samples(n_samples).index
+        for sample in samples:
+            self.plot_prediction(sample)
