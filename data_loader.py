@@ -35,11 +35,12 @@ class DataLoader:
 
     def _load_images_from_file_paths_by_label(self, file_paths_by_label: Dict[str, List[str]]):
         data = []
-        for label, file_paths in file_paths_by_label.items():
+        for folder_name, file_paths in file_paths_by_label.items():
             for file_path in file_paths:
+                labels = [label.strip() for label in folder_name.split(',')]
                 image = self._open_image(file_path)
                 if self._is_image_valid(image):
-                    data.append({'x': image.copy(), 'y': label})
+                    data.append({'x': image.copy(), 'y': labels})
         return data
 
     def _load_images_from_file_paths(self, file_paths: List[str]):

@@ -3,6 +3,7 @@ from typing import Tuple, Callable
 
 import numpy as np
 import torch
+from sklearn.preprocessing import MultiLabelBinarizer
 
 from image_data import ImageData
 
@@ -13,7 +14,7 @@ class Learner:
 
     def __init__(self,
                  model,
-                 loss_function: Callable = torch.nn.NLLLoss,
+                 loss_function: Callable = torch.nn.BCEWithLogitsLoss,
                  optimizer_function: Callable = torch.optim.Adam):
         self.model = model
         self.loss_function = loss_function()
@@ -36,6 +37,8 @@ class Learner:
         self.class_to_label_mapping = data.class_to_label_mapping
         self.early_stop_option = early_stop_option
         self.epochs = epochs
+        self.image_data = data
+        self.one_hot_encoder = MultiLabelBinarizer(classes=list(self.class_to_label_mapping.keys()))
 
         x_valid, y_valid = self.prepare_validation_data(data, image_transforms_validation)
 
@@ -110,7 +113,7 @@ class Learner:
             return False
         return self.validation_losses[-1] > self.validation_losses[-2]
 
-    def predict(self, images: list, transforms) -> Tuple[np.ndarray, np.ndarray]:
+    def predict(self, images: list, transforms, threshold: float = 0.5) -> Tuple[list, list]:
         self.set_evaluation_mode()
         predicted_classes, probabilities = [], []
         for image in images:
@@ -118,10 +121,10 @@ class Learner:
             image = image.unsqueeze(0)
             prediction = self.model(image)
             prob = torch.exp(prediction).detach().numpy()[0]
-            predicted_class = np.argmax(prob, axis=0)
-            predicted_classes.append(predicted_class)
+            predicted_class = np.where(prob > threshold)
+            predicted_classes.append(predicted_class[0].tolist())
             probabilities.append(prob)
-        return np.array(predicted_classes), np.array(probabilities)
+        return predicted_classes, probabilities
 
     def set_traininig_mode(self):
         self.model.train()
@@ -134,6 +137,6 @@ class Learner:
     def apply_transforms_to_images(images, transforms):
         return torch.stack([transforms(image) for image in images])
 
-    @staticmethod
-    def integers_to_tensor(data):
-        return torch.Tensor(data).long()
+    def integers_to_tensor(self, data):
+        data_one_hot_encoded = self.one_hot_encoder.fit_transform(data)
+        return torch.Tensor(data_one_hot_encoded)

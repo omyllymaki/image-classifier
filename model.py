@@ -14,7 +14,7 @@ def classifier(n_inputs: int, n_outputs: int, dropout: float = 0.4):
         nn.ReLU(),
         nn.Dropout(dropout),
         nn.Linear(256, n_outputs),
-        nn.LogSoftmax(dim=1)
+        nn.LogSigmoid()
     )
 
 

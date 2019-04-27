@@ -32,12 +32,13 @@ class ImageData:
         image_data = []
         for item in self.image_data:
             x = item['x']
-            y = self.label_to_class_mapping[item['y']]
+            y = [self.label_to_class_mapping[label] for label in item['y']]
             image_data.append(dict(x=x, y=y))
         self.image_data = image_data
 
     def get_label_mappings(self):
-        self.labels = list(set([sample['y'] for sample in self.image_data]))
+        all_labels = [sample['y'] for sample in self.image_data]
+        self.labels = list(set(x for l in all_labels for x in l))
         self.label_to_class_mapping = {label: idx for idx, label in enumerate(self.labels)}
         self.class_to_label_mapping = {v: k for k, v in self.label_to_class_mapping.items()}
 
@@ -94,7 +95,7 @@ class ImageData:
         return [self.class_to_label_mapping[c] for c in classes]
 
     def _get_label(self, data, index):
-        return self.class_to_label_mapping[data[index]['y']]
+        return [self.class_to_label_mapping[item] for item in data[index]['y']]
 
     @staticmethod
     def _get_images(data):
