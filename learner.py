@@ -14,7 +14,7 @@ class Learner:
 
     def __init__(self,
                  model,
-                 loss_function: Callable = torch.nn.BCEWithLogitsLoss,
+                 loss_function: Callable = torch.nn.MultiLabelSoftMarginLoss,
                  optimizer_function: Callable = torch.optim.Adam):
         self.model = model
         self.loss_function = loss_function()
