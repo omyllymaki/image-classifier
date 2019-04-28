@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Callable
+from typing import Tuple, Callable, List
 
 import numpy as np
 import torch
@@ -10,11 +10,11 @@ from image_data import ImageData
 logger = logging.getLogger(__name__)
 
 
-class Learner:
+class BaseLearner:
 
     def __init__(self,
                  model,
-                 loss_function: Callable = torch.nn.MultiLabelSoftMarginLoss,
+                 loss_function: Callable,
                  optimizer_function: Callable = torch.optim.Adam):
         self.model = model
         self.loss_function = loss_function()
@@ -69,14 +69,14 @@ class Learner:
     def prepare_training_data(self, batch, data, image_transforms_training):
         x_batch, y_batch = data.get_batch_data(batch)
         x_batch = self.apply_transforms_to_images(x_batch, image_transforms_training)
-        y_batch = self.integers_to_tensor(y_batch)
+        y_batch = self.classes_to_target_tensor(y_batch)
         return x_batch, y_batch
 
     def prepare_validation_data(self, data, image_transforms_validation):
         x_valid = data.get_images('validation')
         y_valid = data.get_classes('validation')
         x_valid = self.apply_transforms_to_images(x_valid, image_transforms_validation)
-        y_valid = self.integers_to_tensor(y_valid)
+        y_valid = self.classes_to_target_tensor(y_valid)
         return x_valid, y_valid
 
     def log_epoch(self):
@@ -113,7 +113,13 @@ class Learner:
             return False
         return self.validation_losses[-1] > self.validation_losses[-2]
 
-    def predict(self, images: list, transforms, threshold: float = 0.5) -> Tuple[list, list]:
+    def set_traininig_mode(self):
+        self.model.train()
+
+    def set_evaluation_mode(self):
+        self.model.eval()  # E.g. disables dropout
+
+    def predict(self, images: list, transforms, **kwargs) -> Tuple[list, list]:
         self.set_evaluation_mode()
         predicted_classes, probabilities = [], []
         for image in images:
@@ -121,22 +127,57 @@ class Learner:
             image = image.unsqueeze(0)
             prediction = self.model(image)
             prob = torch.exp(prediction).detach().numpy()[0]
-            predicted_class = np.where(prob > threshold)
-            predicted_classes.append(predicted_class[0].tolist())
+            predicted_class = self.get_predicted_classes(prob, **kwargs)
+            predicted_classes.append(predicted_class)
             probabilities.append(prob)
         return predicted_classes, probabilities
-
-    def set_traininig_mode(self):
-        self.model.train()
-
-    def set_evaluation_mode(self):
-        # E.g. disables dropout
-        self.model.eval()
 
     @staticmethod
     def apply_transforms_to_images(images, transforms):
         return torch.stack([transforms(image) for image in images])
 
-    def integers_to_tensor(self, data):
-        data_one_hot_encoded = self.one_hot_encoder.fit_transform(data)
-        return torch.Tensor(data_one_hot_encoded)
+    def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
+        raise NotImplementedError
+
+    def get_predicted_classes(self, probabilities, **kwargs) -> List[int]:
+        raise NotImplementedError
+
+
+class MultiLabelLearner(BaseLearner):
+    def __init__(self,
+                 model,
+                 loss_function: Callable = torch.nn.MultiLabelSoftMarginLoss,
+                 optimizer_function: Callable = torch.optim.Adam):
+        super().__init__(model, loss_function, optimizer_function)
+
+    def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
+        classes_one_hot_encoded = self.one_hot_encoder.fit_transform(classes_list)
+        return torch.Tensor(classes_one_hot_encoded)
+
+    def get_predicted_classes(self, probabilities, threshold: float = 0.5) -> List[int]:
+        predicted_classes = np.where(probabilities > threshold)
+        return predicted_classes[0].tolist()
+
+
+class SingleLabelLearner(BaseLearner):
+    def __init__(self,
+                 model,
+                 loss_function: Callable = torch.nn.NLLLoss,
+                 optimizer_function: Callable = torch.optim.Adam):
+        super().__init__(model, loss_function, optimizer_function)
+
+    def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
+        classes_list = np.array(classes_list).flatten()
+        return torch.Tensor(classes_list).long()
+
+    def get_predicted_classes(self, probabilities) -> List[int]:
+        predicted_class = np.argmax(probabilities, axis=0)
+        return [predicted_class]
+
+
+def get_learner(model, is_multilabel: bool):
+    if is_multilabel:
+        learner = MultiLabelLearner(model)
+    else:
+        learner = SingleLabelLearner(model)
+    return learner

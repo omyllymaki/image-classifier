@@ -4,7 +4,7 @@ from data_loader import DataLoader
 from file_io import save_pickle_file
 from image_data import ImageData
 from image_transforms import IMAGE_TRANSFORMS
-from learner import Learner
+from learner import BaseLearner
 from model import get_pretrained_vgg16
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def train_model(source_data_path: str = 'data',
     model = get_pretrained_vgg16(n_classes)
 
     logger.info('Start model training')
-    learner = Learner(model)
+    learner = BaseLearner(model)
     losses, losses_valid = learner.fit_model(image_data,
                                              image_transforms_training=IMAGE_TRANSFORMS['training'],
                                              image_transforms_validation=IMAGE_TRANSFORMS['validation'],

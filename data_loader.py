@@ -13,9 +13,10 @@ class DataLoader:
 
     def get_labeled_image_data(self,
                                path: str,
-                               file_extension: str = 'jpg') -> List[dict]:
+                               file_extension: str = 'jpg',
+                               split_labels_by: str = ',') -> List[dict]:
         file_paths_by_label = self._get_file_names_from_sub_folders(path, file_extension)
-        image_data = self._load_images_from_file_paths_by_label(file_paths_by_label)
+        image_data = self._load_images_from_file_paths_by_label(file_paths_by_label, split_labels_by)
         return image_data
 
     def get_image_data(self,
@@ -33,11 +34,13 @@ class DataLoader:
             file_names[folder_name] = self._get_file_paths(folder_path, file_extension)
         return file_names
 
-    def _load_images_from_file_paths_by_label(self, file_paths_by_label: Dict[str, List[str]]):
+    def _load_images_from_file_paths_by_label(self,
+                                              file_paths_by_label: Dict[str, List[str]],
+                                              split_labels_by: str = ','):
         data = []
         for folder_name, file_paths in file_paths_by_label.items():
             for file_path in file_paths:
-                labels = [label.strip() for label in folder_name.split(',')]
+                labels = [label.strip() for label in folder_name.split(split_labels_by)]
                 image = self._open_image(file_path)
                 if self._is_image_valid(image):
                     data.append({'x': image.copy(), 'y': labels})
