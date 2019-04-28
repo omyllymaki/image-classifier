@@ -82,3 +82,7 @@ class MultilabelInterpreter:
         samples = self.get_most_uncertain_samples(n_samples).index
         for sample in samples:
             self.plot_prediction(sample)
+
+    def calculate_confusion_matrix(self):
+        print('Not implemented')
+        return None
