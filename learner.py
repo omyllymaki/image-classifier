@@ -5,8 +5,6 @@ import numpy as np
 import torch
 from sklearn.preprocessing import MultiLabelBinarizer
 
-from image_data import ImageData
-
 logger = logging.getLogger(__name__)
 
 
@@ -23,7 +21,7 @@ class BaseLearner:
         self.batch_index = None
 
     def fit_model(self,
-                  data: ImageData,
+                  data,
                   image_transforms_training,
                   image_transforms_validation,
                   batch_size=1,
@@ -139,7 +137,7 @@ class BaseLearner:
     def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
         raise NotImplementedError
 
-    def get_predicted_classes(self, probabilities, **kwargs) -> List[int]:
+    def get_predicted_classes(self, probabilities, **kwargs):
         raise NotImplementedError
 
 
@@ -167,17 +165,8 @@ class SingleLabelLearner(BaseLearner):
         super().__init__(model, loss_function, optimizer_function)
 
     def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
-        classes_list = np.array(classes_list).flatten()
         return torch.Tensor(classes_list).long()
 
-    def get_predicted_classes(self, probabilities) -> List[int]:
+    def get_predicted_classes(self, probabilities) -> int:
         predicted_class = np.argmax(probabilities, axis=0)
-        return [predicted_class]
-
-
-def get_learner(model, is_multilabel: bool):
-    if is_multilabel:
-        learner = MultiLabelLearner(model)
-    else:
-        learner = SingleLabelLearner(model)
-    return learner
+        return predicted_class[0]

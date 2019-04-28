@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 
 class DataLoader:
 
+    def __init__(self, is_multilabel: bool):
+        self.is_multilabel = is_multilabel
+
     def get_labeled_image_data(self,
                                path: str,
                                file_extension: str = 'jpg',
@@ -40,7 +43,10 @@ class DataLoader:
         data = []
         for folder_name, file_paths in file_paths_by_label.items():
             for file_path in file_paths:
-                labels = [label.strip() for label in folder_name.split(split_labels_by)]
+                if self.is_multilabel:
+                    labels = [label.strip() for label in folder_name.split(split_labels_by)]
+                else:
+                    labels = folder_name.strip()
                 image = self._open_image(file_path)
                 if self._is_image_valid(image):
                     data.append({'x': image.copy(), 'y': labels})
