@@ -1,7 +1,7 @@
 from google_images_download import google_images_download
 
-parameters = {'keywords': 'Teddybears, Grizzly bears, Black bears',
-             'limit': 150,
+parameters = {'keywords': 'cat, dog, cat and dog',
+             'limit': 90,
              'print_urls': True,
              'chromedriver': 'chromedriver.exe',
              'output_directory': 'data'

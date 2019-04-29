@@ -137,7 +137,7 @@ class BaseLearner:
     def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
         raise NotImplementedError
 
-    def get_predicted_classes(self, probabilities, **kwargs):
+    def get_predicted_classes(self, probabilities, **kwargs) -> List[int]:
         raise NotImplementedError
 
 
@@ -165,8 +165,9 @@ class SingleLabelLearner(BaseLearner):
         super().__init__(model, loss_function, optimizer_function)
 
     def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
-        return torch.Tensor(classes_list).long()
+        classes_array_flattened = np.array(classes_list).flatten()
+        return torch.Tensor(classes_array_flattened).long()
 
-    def get_predicted_classes(self, probabilities) -> int:
+    def get_predicted_classes(self, probabilities) -> List[int]:
         predicted_class = np.argmax(probabilities, axis=0)
-        return predicted_class[0]
+        return [int(predicted_class)]
