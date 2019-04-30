@@ -2,7 +2,7 @@
 
 Photo classifier based on pretrained CNN model and transfer learning.
 
-Currently supports only single-label classification.
+Supports both single-label and multi-label classification.
 
 You can train your own classifier by downloading set of Google images for the target task.
 
