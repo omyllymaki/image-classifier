@@ -9,10 +9,10 @@ from image_transforms import IMAGE_TRANSFORMS
 logger = logging.getLogger(__name__)
 
 
-def classify_images(model_path: str = 'model.p',
-                    source_path: str = 'data',
-                    target_path: str = None,
-                    file_type: str = 'jpg'
+def classify_images(model_path: str,
+                    source_path: str,
+                    target_path: str,
+                    file_type: str,
                     ):
     if not target_path:
         target_path = os.path.join(source_path, 'classified images')
@@ -33,8 +33,9 @@ def classify_images(model_path: str = 'model.p',
     logger.info('Copy images to target path')
     file_paths = loader._get_file_paths(source_path, file_type)
     for file_path, predicted_class in zip(file_paths, predicted_classes):
-        label = model.class_to_label_mapping[predicted_class]
-        path = os.path.join(target_path, label)
+        label = [model.class_to_label_mapping[item] for item in predicted_class]
+        label_str = ', '.join(label)
+        path = os.path.join(target_path, label_str)
         if not os.path.exists(path):
             os.makedirs(path)
         shutil.copy(file_path, path)
