@@ -6,12 +6,12 @@ from typing import List, Dict
 import numpy as np
 from PIL import Image
 
-from data_loaders.base_image_loader import BaseImageLoader
+from data_loaders.image_loader_interface import ImageLoaderInterface
 
 logger = logging.getLogger(__name__)
 
 
-class ImageLoader(BaseImageLoader):
+class ImageLoader(ImageLoaderInterface):
 
     def load_images_with_labels(self,
                                 path: str,

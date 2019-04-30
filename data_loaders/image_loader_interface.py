@@ -4,7 +4,7 @@ from typing import List, Dict, Union
 from PIL.Image import Image
 
 
-class BaseImageLoader:
+class ImageLoaderInterface:
 
     @abstractmethod
     def load_images(self, *args) -> List[Image]:

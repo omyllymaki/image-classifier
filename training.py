@@ -4,7 +4,7 @@ from data_loaders.image_loader_labels_from_folders import ImageLoader
 from file_io import save_pickle_file
 from image_data import ImageData
 from image_transforms import IMAGE_TRANSFORMS
-from learner import MultiLabelLearner, SingleLabelLearner
+from learners.utils import get_learner
 from model import get_pretrained_vgg16
 
 logger = logging.getLogger(__name__)
@@ -20,11 +20,6 @@ def train_model(source_data_path: str,
                 early_stop_option: bool,
                 is_multilabel: bool,
                 split_labels_by: str):
-    if is_multilabel:
-        Learner = MultiLabelLearner
-    else:
-        Learner = SingleLabelLearner
-
     logger.info('Start data loading')
     data_loader = ImageLoader()
     data = data_loader.load_images_with_labels(source_data_path, split_labels_by=split_labels_by)
@@ -33,6 +28,7 @@ def train_model(source_data_path: str,
     image_data = ImageData(data, 0.7, 0.3, 0)
     n_classes = len(image_data.labels)
     model = get_pretrained_vgg16(n_classes, is_multilabel, dropout)
+    Learner = get_learner(is_multilabel)
     learner = Learner(model)
 
     logger.info('Start model training')
