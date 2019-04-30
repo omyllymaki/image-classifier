@@ -6,8 +6,6 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.preprocessing import MultiLabelBinarizer
 
-from plotting import show_image
-
 
 class BaseInterpreter:
     def __init__(self,
@@ -60,7 +58,7 @@ class BaseInterpreter:
         plt.xlim(0, 1)
         plt.grid()
         plt.subplot(1, 2, 2)
-        show_image(image, f' True label: {true_label}')
+        self.show_image(image, f' True label: {true_label}')
 
     def plot_most_incorrect_samples(self, n_samples: int):
         samples = self.get_most_incorrect_samples(n_samples).index
@@ -74,6 +72,14 @@ class BaseInterpreter:
 
     def get_labels(self) -> np.ndarray:
         return np.array(list(self.mapper.values()))
+
+    @staticmethod
+    def show_image(image, title=None):
+        image = plt.imshow(np.asarray(image))
+        plt.axis('off')
+        if title:
+            plt.title(title)
+        return image
 
     @abstractmethod
     def calculate_confusion_matrix(self) -> pd.DataFrame:
