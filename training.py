@@ -5,7 +5,7 @@ from file_io import save_pickle_file
 from image_data import ImageData
 from image_transforms import IMAGE_TRANSFORMS
 from learners.utils import get_learner
-from model import get_pretrained_vgg16
+from model import get_vgg16_model_for_transfer_learning
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def train_model(source_data_path: str,
 
     image_data = ImageData(data, 0.7, 0.3, 0)
     n_classes = len(image_data.labels)
-    model = get_pretrained_vgg16(n_classes, is_multilabel, dropout)
+    model = get_vgg16_model_for_transfer_learning(n_classes, is_multilabel, dropout)
     Learner = get_learner(is_multilabel)
     learner = Learner(model)
 
