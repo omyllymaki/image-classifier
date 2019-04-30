@@ -1,6 +1,6 @@
 import logging
 
-from data_loader import DataLoader
+from data_loaders.image_loader_labels_from_folders import ImageLoader
 from file_io import save_pickle_file
 from image_data import ImageData
 from image_transforms import IMAGE_TRANSFORMS
@@ -26,8 +26,8 @@ def train_model(source_data_path: str,
         Learner = SingleLabelLearner
 
     logger.info('Start data loading')
-    data_loader = DataLoader()
-    data = data_loader.get_labeled_image_data(source_data_path, split_labels_by=split_labels_by)
+    data_loader = ImageLoader()
+    data = data_loader.load_images_with_labels(source_data_path, split_labels_by=split_labels_by)
     logger.info('Data loading finished')
 
     image_data = ImageData(data, 0.7, 0.3, 0)

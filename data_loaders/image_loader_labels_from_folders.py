@@ -6,22 +6,24 @@ from typing import List, Dict
 import numpy as np
 from PIL import Image
 
+from data_loaders.base_image_loader import BaseImageLoader
+
 logger = logging.getLogger(__name__)
 
 
-class DataLoader:
+class ImageLoader(BaseImageLoader):
 
-    def get_labeled_image_data(self,
-                               path: str,
-                               file_extension: str = 'jpg',
-                               split_labels_by: str = ',') -> List[dict]:
+    def load_images_with_labels(self,
+                                path: str,
+                                file_extension: str = 'jpg',
+                                split_labels_by: str = ',') -> List[dict]:
         file_paths_by_label = self._get_file_names_from_sub_folders(path, file_extension)
         image_data = self._load_images_from_file_paths_by_label(file_paths_by_label, split_labels_by)
         return image_data
 
-    def get_image_data(self,
-                       dir_path: str,
-                       file_extension: str = 'jpg') -> list:
+    def load_images(self,
+                    dir_path: str,
+                    file_extension: str = 'jpg') -> list:
         file_paths = self._get_file_paths(dir_path, file_extension)
         images = self._load_images_from_file_paths(file_paths)
         return images

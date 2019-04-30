@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 
-from data_loader import DataLoader
+from data_loaders.image_loader_labels_from_folders import ImageLoader
 from file_io import load_pickle_file
 from image_transforms import IMAGE_TRANSFORMS
 
@@ -24,8 +24,8 @@ def classify_images(model_path: str,
     model = load_pickle_file(model_path)
 
     logger.info('Start image loading')
-    loader = DataLoader()
-    images = loader.get_image_data(source_path, file_type)
+    loader = ImageLoader()
+    images = loader.load_images(source_path, file_type)
 
     logger.info('Start image classification')
     predicted_classes, probabilities = model.predict(images, IMAGE_TRANSFORMS['test'])
