@@ -4,13 +4,34 @@ from typing import List
 
 
 class ImageData:
+    """
+    Image data and methods to access image data in different ways
+    * Take image data as input
+    * Separate data to training, validation and test set
+    * Convert labels to integers for model training
+    * Methods to get batches of image data
+    """
+
     def __init__(self,
                  image_data: List[dict],
                  p_training: float = 0.5,
                  p_valid: float = 0.25,
                  p_test: float = 0.25,
                  ):
-        self.image_data = image_data
+        self.labels = None
+        self.label_to_class_mapping = None
+        self.class_to_label_mapping = None
+        self.training_data = None
+        self.validation_data = None
+        self.test_data = None
+
+        self.data_set_options = {
+            'training': self.training_data,
+            'validation': self.validation_data,
+            'test': self.test_data
+        }
+
+        self.input_image_data = image_data
         self.get_label_mappings()
         self.convert_labels_to_integers()
         self.divide_data_to_sets(p_training, p_valid, p_test)
@@ -29,11 +50,11 @@ class ImageData:
 
     def convert_labels_to_integers(self):
         image_data = []
-        for item in self.image_data:
+        for item in self.input_image_data:
             x = item['x']
-            y = self._label_to_integer(item['y'])
+            y = self._labels_to_integers(item['y'])
             image_data.append(dict(x=x, y=y))
-        self.image_data = image_data
+        self.input_image_data = image_data
 
     def get_label_mappings(self):
         self.labels = self._get_unique_labels()
@@ -41,7 +62,7 @@ class ImageData:
         self.class_to_label_mapping = {v: k for k, v in self.label_to_class_mapping.items()}
 
     def divide_data_to_sets(self, p_training: float, p_validation: float, p_test: float):
-        n_images = len(self.image_data)
+        n_images = len(self.input_image_data)
         indices = list(range(n_images))
         shuffle(indices)
 
@@ -53,9 +74,9 @@ class ImageData:
         indices_validation = indices[n_train:n_train + n_validation]
         indices_test = indices[n_train + n_validation:n_train + n_validation + n_test]
 
-        self.training_data = [self.image_data[i] for i in indices_train]
-        self.validation_data = [self.image_data[i] for i in indices_validation]
-        self.test_data = [self.image_data[i] for i in indices_test]
+        self.training_data = [self.input_image_data[i] for i in indices_train]
+        self.validation_data = [self.input_image_data[i] for i in indices_validation]
+        self.test_data = [self.input_image_data[i] for i in indices_test]
 
     def get_image(self, index, data_set_name):
         data = self.get_data_set(data_set_name)
@@ -93,10 +114,10 @@ class ImageData:
         return [self.class_to_label_mapping[c] for c in classes]
 
     def _get_unique_labels(self):
-        all_labels = [sample['y'] for sample in self.image_data]
+        all_labels = [sample['y'] for sample in self.input_image_data]
         return list(set(x for l in all_labels for x in l))
 
-    def _label_to_integer(self, label):
+    def _labels_to_integers(self, label):
         return [self.label_to_class_mapping[item] for item in label]
 
     def _get_label(self, data, index):
