@@ -17,16 +17,16 @@ def main():
 
 
 @main.command('classify')
-@click.option('--model', '-m',
+@click.option('--model',
               default='model.p',
               help='Model file path')
-@click.option('--source', '-s',
+@click.option('--source',
               default='data',
               help='Folder path containing images')
-@click.option('--target', '-t',
+@click.option('--target',
               default=None,
               help='Folder path where results will be saved')
-@click.option('--image_type', '-type',
+@click.option('--image_type',
               default='jpg',
               help='Image extension')
 def classify(model, source, target, image_type):

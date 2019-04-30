@@ -39,17 +39,27 @@ Usage: cli_app.py train [OPTIONS]
 
 Options:
 
--s, --source TEXT         Folder path containing labeled images, labels as subfolder names
+--source TEXT            Folder path containing labeled images, labels as subfolder names
 
--t, --target TEXT         Path where model will be saved
+--target TEXT            Path where model will be saved
 
--b, --batch_size INTEGER  Batch size for model training
+--batch_size INTEGER     Batch size for model training
 
--e, --epochs INTEGER      Number of epochs for model training
+--epochs INTEGER         Number of epochs for model training
 
---early_stop BOOLEAN      Use early stop in model training
+--dropout FLOAT          Value of dropout for last classification layer of CNN
 
---help                    Show this message and exit.
+--learning_rate FLOAT    Training learning rate
+
+--weight_decay FLOAT     Weight decay used for regularization
+
+--early_stop BOOLEAN     Use early stop in model training
+
+--is_multilabel BOOLEAN  Is this multi-label classification?
+
+--split_labels_by TEXT   Split folder names to labels using this as separator
+
+--help                   Show this message and exit.
 
 **Classification of images**
 
@@ -57,14 +67,14 @@ Usage: cli_app.py classify [OPTIONS]
 
 Options:
 
--m, --model TEXT          Model file path
+--model TEXT            Model file path
 
--s, --source TEXT         Folder path containing images
+--source TEXT           Folder path containing images
 
--t, --target TEXT         Folder path where results will be saved
+--target TEXT           Folder path where results will be saved
 
--type, --image_type TEXT  Image extension
+--image_type TEXT       Image extension
 
---help                    Show this message and exit.
+--help                  Show this message and exit.
 
 
