@@ -23,8 +23,9 @@ def freeze_model_parameters(model):
     return model
 
 
-def get_pretrained_vgg16():
-    return models.vgg16(pretrained=True)
+def get_pretrained_model(model_architecture: str):
+    model = getattr(models, model_architecture)
+    return model(pretrained=True)
 
 
 def prepare_model_for_transfer_learning(model, n_classes: int, is_multilabel: bool, dropout: float = 0.4):
@@ -34,7 +35,10 @@ def prepare_model_for_transfer_learning(model, n_classes: int, is_multilabel: bo
     return model
 
 
-def get_vgg16_model_for_transfer_learning(n_classes: int, is_multilabel: bool, dropout: float = 0.4):
-    model = get_pretrained_vgg16()
+def get_pretrained_model_for_transfer_learning(n_classes: int,
+                                               is_multilabel: bool,
+                                               dropout: float = 0.4,
+                                               model_architecture: str = 'vgg16'):
+    model = get_pretrained_model(model_architecture)
     model = prepare_model_for_transfer_learning(model, n_classes, is_multilabel, dropout)
     return model
