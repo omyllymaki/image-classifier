@@ -41,11 +41,13 @@ class ImageLoader(ImageLoaderInterface):
                                               split_labels_by: str = ','):
         data = []
         for folder_name, file_paths in file_paths_by_label.items():
-            for file_path in file_paths:
+            for index, file_path in enumerate(file_paths, 1):
+                n_files = len(file_paths)
                 labels = [label.strip() for label in folder_name.split(split_labels_by)]
                 image = self._open_image(file_path)
                 if self._is_image_valid(image):
                     data.append({'x': image.copy(), 'y': labels})
+                logger.info(f'Folder {folder_name}: {index}/{n_files} images loaded')
         return data
 
     def _load_images_from_file_paths(self, file_paths: List[str]):
