@@ -4,6 +4,7 @@ from data_loaders.image_loader_labels_from_folders import ImageLoader
 from file_io import save_pickle_file
 from image_data import ImageData
 from image_transforms import IMAGE_TRANSFORMS
+from interpreters.utils import get_interpreter
 from learners.utils import get_learner
 from model import get_pretrained_model_for_transfer_learning
 
@@ -44,3 +45,19 @@ def train_model(source_data_path: str,
     save_pickle_file(learner, model_path)
     logger.info('Model training finished')
     logger.info(f'Model saved to path: {model_path}')
+
+    logger.info('Evaluating model performance')
+    images = image_data.get_images('validation')
+    true_classes = image_data.get_classes('validation')
+    predicted_classes, probabilities = learner.predict(images, IMAGE_TRANSFORMS['validation'])
+
+    Interpreter = get_interpreter(is_multilabel)
+    interpreter = Interpreter(images, predicted_classes, true_classes, probabilities, learner.class_to_label_mapping)
+    accuracy = interpreter.calculate_accuracy()
+    accuracy_by_label = interpreter.calculate_accuracy_by_label()
+    confusion_matrix = interpreter.calculate_confusion_matrix()
+
+    logger.info(f'Overall accuracy of the model: {accuracy}')
+    logger.info(f'Accuracy by label: \n{accuracy_by_label}')
+    logger.info(f'Confusion matrix: \n{confusion_matrix}')
+
