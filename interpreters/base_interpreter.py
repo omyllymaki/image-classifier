@@ -20,6 +20,8 @@ class BaseInterpreter:
         self.mapper = mapper
         self.probabilities = np.array(probabilities)
 
+        self.y_true_labels = self.convert_classes_to_labels(y_true)
+        self.y_pred_labels = self.convert_classes_to_labels(y_pred)
         one_hot_encoder = MultiLabelBinarizer()
         self.y_pred_one_hot_encoded = one_hot_encoder.fit_transform(y_pred)
         self.y_true_one_hot_encoded = one_hot_encoder.fit_transform(y_true)
@@ -28,15 +30,16 @@ class BaseInterpreter:
     def get_summary_table(self) -> pd.DataFrame:
         probability_differences = abs(self.probabilities - self.y_true_one_hot_encoded)
         mean_difference_per_sample = probability_differences.mean(axis=1)
-        df_pred = pd.DataFrame(self.probabilities).rename(self.mapper, axis='columns').add_suffix('_prediction')
-        df_true = pd.DataFrame(self.y_true_one_hot_encoded).rename(self.mapper, axis='columns').add_suffix('_true')
-        df_mean_difference = pd.DataFrame(dict(prediction_error=mean_difference_per_sample))
-        df_summary = df_mean_difference.join(df_pred).join(df_true)
+        df_pred = pd.DataFrame(self.probabilities).rename(self.mapper, axis='columns').add_suffix(' propability')
+        df_summary = df_pred
+        df_summary['true'] = self.y_true_labels
+        df_summary['predicted'] = self.y_pred_labels
+        df_summary['error'] = mean_difference_per_sample
         return df_summary
 
     def get_most_incorrect_samples(self, n_samples: int) -> pd.DataFrame:
         df_summary = self.get_summary_table()
-        df_summary_sorted = df_summary.sort_values('prediction_error', ascending=False)
+        df_summary_sorted = df_summary.sort_values('error', ascending=False)
         return df_summary_sorted.iloc[:n_samples]
 
     def get_most_uncertain_samples(self, n_samples: int) -> pd.DataFrame:
@@ -80,6 +83,9 @@ class BaseInterpreter:
         if title:
             plt.title(title)
         return image
+
+    def convert_classes_to_labels(self, labels_list):
+        return [[self.mapper[label] for label in labels] for labels in labels_list]
 
     @abstractmethod
     def calculate_confusion_matrix(self) -> pd.DataFrame:
