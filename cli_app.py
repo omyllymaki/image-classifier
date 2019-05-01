@@ -2,8 +2,8 @@ import logging
 
 import click
 
-from classification import classify_images
-from training import train_model
+from cli_app.classification import classify_images
+from cli_app.training import train_model
 
 logging.basicConfig(level=logging.INFO)
 
