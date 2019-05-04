@@ -25,10 +25,13 @@ class SingleLabelInterpreter(BaseInterpreter):
         series = pd.Series(self.calculate_is_correct_array(), index=self.y_true_flat)
         return series.groupby(series.index).mean().rename(self.mapper)
 
-    def calculate_confusion_matrix(self) -> pd.DataFrame:
+    def calculate_confusion_matrix(self, normalize: bool = True) -> pd.DataFrame:
         labels = self.get_labels()
         result = confusion_matrix(self.y_true_flat, self.y_pred_flat)
-        return pd.DataFrame(result, index=labels, columns=labels)
+        result = pd.DataFrame(result, index=labels, columns=labels)
+        if normalize:
+            result = result.div(result.sum(axis=1), axis=0)
+        return result
 
     def get_summary_table(self) -> pd.DataFrame:
         df_summary = super().get_summary_table()

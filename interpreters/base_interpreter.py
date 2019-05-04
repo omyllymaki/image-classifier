@@ -88,7 +88,7 @@ class BaseInterpreter:
         return [[self.mapper[label] for label in labels] for labels in labels_list]
 
     @abstractmethod
-    def calculate_confusion_matrix(self) -> pd.DataFrame:
+    def calculate_confusion_matrix(self, normalize: bool = True) -> pd.DataFrame:
         raise NotImplementedError
 
     @abstractmethod

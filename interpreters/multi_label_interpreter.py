@@ -22,7 +22,7 @@ class MultiLabelInterpreter(BaseInterpreter):
         accuracy_by_label = self.is_correct_array.mean(axis=0)
         return pd.Series(accuracy_by_label).rename(self.mapper)
 
-    def calculate_confusion_matrix(self):
+    def calculate_confusion_matrix(self, normalize: bool = True):
         print('Confusion matrix is not implemented for multilabel classification')
         return None
 
