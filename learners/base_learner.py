@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import Tuple, Callable, List
 
+import numpy as np
 import torch
 from sklearn.preprocessing import MultiLabelBinarizer
 
@@ -19,6 +20,8 @@ class BaseLearner:
         self.optimizer_function = optimizer_function
         self.epoch = None
         self.batch_index = None
+        self.models = None
+        self.best_model = None
 
     def fit_model(self,
                   data,
@@ -40,7 +43,7 @@ class BaseLearner:
 
         x_valid, y_valid = self.prepare_validation_data(data, image_transforms_validation)
 
-        self.losses, self.validation_losses = [], []
+        self.losses, self.validation_losses, self.models = [], [], []
         for self.epoch in range(self.epochs):
             batches = data.make_batches('training', batch_size=batch_size)
             for self.batch_index, batch in enumerate(batches):
@@ -51,13 +54,21 @@ class BaseLearner:
                 self.log_batch()
 
             self.calculate_validation_loss(x_valid, y_valid)
+            self.models.append(self.model)
             self.log_epoch()
 
             if self.is_stop_criteria_filled():
                 logger.info('Early stop criterion filled; fitting completed!')
-                return self.losses, self.validation_losses
+                break
 
+        self.best_model = self.get_best_model()
         return self.losses, self.validation_losses
+
+    def get_best_model(self):
+        lowest_validation_loss_index = int(np.argmin(self.validation_losses))
+        lowest_validation_loss = self.validation_losses[lowest_validation_loss_index]
+        logger.info(f'Lowest validation loss: epoch {lowest_validation_loss_index + 1}; loss {lowest_validation_loss}')
+        return self.models[lowest_validation_loss_index]
 
     def calculate_training_loss(self, x_batch, y_batch):
         y_predicted = self.model(x_batch)
@@ -123,7 +134,7 @@ class BaseLearner:
         for image in images:
             image = transforms(image)
             image = image.unsqueeze(0)
-            prediction = self.model(image)
+            prediction = self.best_model(image)
             prob = torch.exp(prediction).detach().numpy()[0]
             predicted_class = self.get_predicted_classes(prob, **kwargs)
             predicted_classes.append(predicted_class)
@@ -136,8 +147,19 @@ class BaseLearner:
 
     @abstractmethod
     def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
+        """
+        This needs to be implemented by inheritor.
+
+        Single-label: should return 1-dimensional torch LongTensor where elements are classes.
+        Multi-label: should return 2-dimensional torch Tensor where rows are one-hot-encoded classes.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def get_predicted_classes(self, probabilities, **kwargs) -> List[int]:
+        """
+        This needs to be implemented by inheritor.
+
+        For single-label and multi-label, should return list of predicted classes (integers).
+        """
         raise NotImplementedError
