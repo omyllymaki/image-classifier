@@ -118,9 +118,11 @@ class BaseLearner:
     def is_stop_criteria_filled(self):
         if not self.early_stop_option:
             return False
-        if self.epoch < 1:
+        if self.epoch < 2:
             return False
-        return self.validation_losses[-1] > self.validation_losses[-2]
+        last_losses = self.validation_losses[-3:]
+        slope = np.polyfit(range(len(last_losses)), last_losses, 1)[0]
+        return slope > 0
 
     def set_traininig_mode(self):
         self.model.train()
