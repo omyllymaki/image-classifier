@@ -44,7 +44,7 @@ class BaseLearner:
         x_valid, y_valid = self.prepare_validation_data(data, image_transforms_validation)
 
         self.losses, self.validation_losses, self.models = [], [], []
-        for self.epoch in range(self.epochs):
+        for self.epoch in range(1, self.epochs + 1):
             batches = data.make_batches('training', batch_size=batch_size)
             for self.batch_index, batch in enumerate(batches):
                 x_batch, y_batch = self.prepare_training_data(batch, data, image_transforms_training)
@@ -91,13 +91,13 @@ class BaseLearner:
     def log_epoch(self):
         logger.info(
             f'''
-            Epoch: {self.epoch + 1}/{self.epochs}
+            Epoch: {self.epoch}/{self.epochs}
             Validation loss: {self.loss_valid.item()}''')
 
     def log_batch(self):
         logger.debug(
             f'''
-            Epoch: {self.epoch + 1}/{self.epochs}
+            Epoch: {self.epoch}/{self.epochs}
             Batch: {self.batch_index}
             Training loss: {self.loss.item()}''')
 
@@ -115,12 +115,12 @@ class BaseLearner:
         self.loss.backward()
         self.optimizer.step()
 
-    def is_stop_criteria_filled(self):
+    def is_stop_criteria_filled(self, n_epochs: int = 3):
         if not self.early_stop_option:
             return False
-        if self.epoch < 2:
+        if self.epoch < n_epochs:
             return False
-        last_losses = self.validation_losses[-3:]
+        last_losses = self.validation_losses[-n_epochs:]
         slope = np.polyfit(range(len(last_losses)), last_losses, 1)[0]
         return slope > 0
 
