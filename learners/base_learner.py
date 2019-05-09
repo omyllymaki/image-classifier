@@ -14,14 +14,24 @@ class BaseLearner:
     def __init__(self,
                  model,
                  loss_function: Callable,
-                 optimizer_function: Callable = torch.optim.Adam):
+                 optimizer_function: Callable = torch.optim.Adam,
+                 use_gpu: bool = False):
         self.model = model
         self.loss_function = loss_function()
         self.optimizer_function = optimizer_function
+        self.use_gpu = use_gpu
+        self.device = self.get_device()
         self.epoch = None
         self.batch_index = None
         self.models = None
         self.best_model = None
+
+    def get_device(self):
+        if self.use_gpu and torch.cuda.is_available():
+            device = 'cuda:0'
+        else:
+            device = 'cpu'
+        return device
 
     def fit_model(self,
                   data,
@@ -33,6 +43,7 @@ class BaseLearner:
                   weight_decay: float = 0.01,
                   early_stop_option=True):
 
+        self.model = self.model.to(self.device)
         self.optimizer = self.optimizer_function(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
         self.set_traininig_mode()
         self.class_to_label_mapping = data.class_to_label_mapping
@@ -79,14 +90,14 @@ class BaseLearner:
         x_batch, y_batch = data.get_batch_data(batch)
         x_batch = self.apply_transforms_to_images(x_batch, image_transforms_training)
         y_batch = self.classes_to_target_tensor(y_batch)
-        return x_batch, y_batch
+        return x_batch.to(self.device), y_batch.to(self.device)
 
     def prepare_validation_data(self, data, image_transforms_validation):
         x_valid = data.get_images('validation')
         y_valid = data.get_classes('validation')
         x_valid = self.apply_transforms_to_images(x_valid, image_transforms_validation)
         y_valid = self.classes_to_target_tensor(y_valid)
-        return x_valid, y_valid
+        return x_valid.to(self.device), y_valid.to(self.device)
 
     def log_epoch(self):
         logger.info(
@@ -135,8 +146,8 @@ class BaseLearner:
         predicted_classes, probabilities = [], []
         for image in images:
             image = transforms(image)
-            image = image.unsqueeze(0)
-            prediction = self.best_model(image)
+            image = image.unsqueeze(0).to(self.device)
+            prediction = self.best_model(image).cpu()
             prob = torch.exp(prediction).detach().numpy()[0]
             predicted_class = self.get_predicted_classes(prob, **kwargs)
             predicted_classes.append(predicted_class)

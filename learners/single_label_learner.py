@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import List
 
 import numpy as np
 import torch
@@ -7,11 +7,8 @@ from learners.base_learner import BaseLearner
 
 
 class SingleLabelLearner(BaseLearner):
-    def __init__(self,
-                 model,
-                 loss_function: Callable = torch.nn.NLLLoss,
-                 optimizer_function: Callable = torch.optim.Adam):
-        super().__init__(model, loss_function, optimizer_function)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, loss_function=torch.nn.NLLLoss, **kwargs)
 
     def classes_to_target_tensor(self, classes_list: List[int]) -> torch.Tensor:
         classes_array_flattened = np.array(classes_list).flatten()
