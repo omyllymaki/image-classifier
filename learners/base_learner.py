@@ -27,10 +27,13 @@ class BaseLearner:
         self.best_model = None
 
     def get_device(self):
-        if self.use_gpu and torch.cuda.is_available():
-            device = 'cuda:0'
-        else:
-            device = 'cpu'
+        device = 'cpu'
+        if self.use_gpu:
+            if torch.cuda.is_available():
+                device = 'cuda:0'
+            else:
+                device = 'cpu'
+                logger.warning('GPU is not available in your computer. CPU will be used instead')
         return device
 
     def fit_model(self,
