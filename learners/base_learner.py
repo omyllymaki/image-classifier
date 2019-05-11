@@ -113,9 +113,13 @@ class BaseLearner:
             Training loss: {self.loss.item()}''')
 
     def calculate_validation_loss(self, x_valid, y_valid):
+        # Every image is predicted separately instead of passing all images at once to model
+        # This is done to save memory
+        # TODO: better solution for this is needed
         self.set_evaluation_mode()
         with torch.no_grad():
-            y_predicted_valid = self.model(x_valid)
+            y_predicted_valid = [self.model(x.unsqueeze(0))[0] for x in x_valid]
+            y_predicted_valid = torch.stack(y_predicted_valid)
             loss_valid = self.loss_function(y_predicted_valid, y_valid)
         self.loss_valid = loss_valid
         self.validation_losses.append(self.loss_valid.item())
