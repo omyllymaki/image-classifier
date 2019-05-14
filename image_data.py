@@ -14,9 +14,9 @@ class ImageData:
 
     def __init__(self,
                  image_data: List[dict],
-                 p_training: float = 0.5,
-                 p_valid: float = 0.25,
-                 p_test: float = 0.25,
+                 indices_training: List[int],
+                 indices_validation: List[int],
+                 indices_test: List[int],
                  ):
         self.labels = None
         self.label_to_class_mapping = None
@@ -34,7 +34,7 @@ class ImageData:
         self.input_image_data = image_data
         self.get_label_mappings()
         self.convert_labels_to_integers()
-        self.divide_data_to_sets(p_training, p_valid, p_test)
+        self.divide_data_to_sets(indices_training, indices_validation, indices_test)
 
     def make_batches(self, data_set_name, batch_size):
         self.data = self.get_data_set(data_set_name)
@@ -61,19 +61,7 @@ class ImageData:
         self.label_to_class_mapping = {label: idx for idx, label in enumerate(self.labels)}
         self.class_to_label_mapping = {v: k for k, v in self.label_to_class_mapping.items()}
 
-    def divide_data_to_sets(self, p_training: float, p_validation: float, p_test: float):
-        n_images = len(self.input_image_data)
-        indices = list(range(n_images))
-        shuffle(indices)
-
-        n_train = floor(p_training * n_images)
-        n_validation = floor(p_validation * n_images)
-        n_test = floor(p_test * n_images)
-
-        indices_train = indices[:n_train]
-        indices_validation = indices[n_train:n_train + n_validation]
-        indices_test = indices[n_train + n_validation:n_train + n_validation + n_test]
-
+    def divide_data_to_sets(self, indices_train: List[int], indices_validation: List[int], indices_test: List[int]):
         self.training_data = [self.input_image_data[i] for i in indices_train]
         self.validation_data = [self.input_image_data[i] for i in indices_validation]
         self.test_data = [self.input_image_data[i] for i in indices_test]
