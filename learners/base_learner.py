@@ -68,20 +68,26 @@ class BaseLearner:
 
             self.calculate_validation_loss(x_valid, y_valid)
             self.log_epoch()
-            self.update_best_model()
+            self.check_best_model()
 
             if self.is_stop_criteria_filled():
                 logger.info('Early stop criterion filled; fitting completed!')
                 break
 
+        self.log_best_model()
         return self.losses, self.validation_losses
 
-    def update_best_model(self):
+    def check_best_model(self):
         if self.epoch == 1:
-            self.best_model = self.model
+            self.update_best_model()
         else:
             if self.validation_losses[-1] < self.validation_losses[-2]:
-                self.best_model = self.model
+                self.update_best_model()
+
+    def update_best_model(self):
+        self.best_epoch = self.epoch
+        self.lowest_validation_loss = self.loss_valid
+        self.best_model = self.model
 
     def calculate_training_loss(self, x_batch, y_batch):
         y_predicted = self.model(x_batch)
@@ -113,6 +119,9 @@ class BaseLearner:
             Epoch: {self.epoch}/{self.epochs}
             Batch: {self.batch_index}
             Training loss: {self.loss.item()}''')
+
+    def log_best_model(self):
+        logger.info(f'Lowest validation loss: epoch: {self.best_epoch}; loss: {self.lowest_validation_loss}')
 
     def calculate_validation_loss(self, x_valid, y_valid):
         # Every image is predicted separately instead of passing all images at once to model
