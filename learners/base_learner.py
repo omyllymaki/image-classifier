@@ -48,7 +48,6 @@ class BaseLearner:
 
         self.model = self.model.to(self.device)
         self.optimizer = self.optimizer_function(self.model.parameters(), lr=learning_rate, weight_decay=weight_decay)
-        self.set_traininig_mode()
         self.class_to_label_mapping = data.class_to_label_mapping
         self.early_stop_option = early_stop_option
         self.epochs = epochs
@@ -57,32 +56,32 @@ class BaseLearner:
 
         x_valid, y_valid = self.prepare_validation_data(data, image_transforms_validation)
 
-        self.losses, self.validation_losses, self.models = [], [], []
+        self.set_traininig_mode()
+        self.losses, self.validation_losses = [], []
         for self.epoch in range(1, self.epochs + 1):
             batches = data.make_batches('training', batch_size=batch_size)
             for self.batch_index, batch in enumerate(batches):
                 x_batch, y_batch = self.prepare_training_data(batch, data, image_transforms_training)
-
                 self.calculate_training_loss(x_batch, y_batch)
                 self.update_weights()
                 self.log_batch()
 
             self.calculate_validation_loss(x_valid, y_valid)
-            self.models.append(self.model)
             self.log_epoch()
+            self.update_best_model()
 
             if self.is_stop_criteria_filled():
                 logger.info('Early stop criterion filled; fitting completed!')
                 break
 
-        self.best_model = self.get_best_model()
         return self.losses, self.validation_losses
 
-    def get_best_model(self):
-        lowest_validation_loss_index = int(np.argmin(self.validation_losses))
-        lowest_validation_loss = self.validation_losses[lowest_validation_loss_index]
-        logger.info(f'Lowest validation loss: epoch {lowest_validation_loss_index + 1}; loss {lowest_validation_loss}')
-        return self.models[lowest_validation_loss_index]
+    def update_best_model(self):
+        if self.epoch == 1:
+            self.best_model = self.model
+        else:
+            if self.validation_losses[-1] < self.validation_losses[-2]:
+                self.best_model = self.model
 
     def calculate_training_loss(self, x_batch, y_batch):
         y_predicted = self.model(x_batch)
