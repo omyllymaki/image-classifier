@@ -11,12 +11,13 @@ from data_loaders.image_loader_interface import ImageLoaderInterface
 logger = logging.getLogger(__name__)
 
 
-class ImageLoader(ImageLoaderInterface):
+class ImageLoaderFromFolders(ImageLoaderInterface):
 
     def load_images_with_labels(self,
                                 path: str,
                                 file_extension: str = 'jpg',
-                                split_labels_by: str = ',') -> List[dict]:
+                                split_labels_by: str = ',',
+                                ) -> List[dict]:
         file_paths_by_label = self._get_file_names_from_sub_folders(path, file_extension)
         image_data = self._load_images_from_file_paths_by_label(file_paths_by_label, split_labels_by)
         return image_data

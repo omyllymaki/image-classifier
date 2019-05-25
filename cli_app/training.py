@@ -1,6 +1,6 @@
 import logging
 
-from data_loaders.image_loader_labels_from_folders import ImageLoader
+from data_loaders.image_loader_labels_from_folders import ImageLoaderFromFolders
 from file_io import save_pickle_file
 from image_data import ImageData
 from image_transforms import IMAGE_TRANSFORMS
@@ -22,7 +22,7 @@ def train_model(source_data_path: str,
                 is_multilabel: bool,
                 split_labels_by: str):
     logger.info('Start data loading')
-    data_loader = ImageLoader()
+    data_loader = ImageLoaderFromFolders()
     data = data_loader.load_images_with_labels(source_data_path, split_labels_by=split_labels_by)
     logger.info('Data loading finished')
 
