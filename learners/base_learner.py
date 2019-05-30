@@ -81,7 +81,7 @@ class BaseLearner:
         if self.epoch == 1:
             self.update_best_model()
         else:
-            if self.validation_losses[-1] < self.validation_losses[-2]:
+            if self.loss_valid < self.lowest_validation_loss:
                 self.update_best_model()
 
     def update_best_model(self):
