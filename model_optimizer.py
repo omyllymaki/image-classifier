@@ -2,35 +2,45 @@ import itertools
 import logging
 import time
 import random
+from typing import Dict
 
 import pandas as pd
 import numpy as np
+
+from image_data import ImageData
+from learners.base_learner import BaseLearner
 
 logger = logging.getLogger(__name__)
 
 
 class ModelOptimizer:
 
-    def __init__(self, learner, data, parameter_options):
+    def __init__(self, learner: BaseLearner,
+                 data: ImageData,
+                 parameter_options: Dict[str, list]):
         self.learner = learner
         self.data = data
         self.parameter_options = parameter_options
         self.learner_candidates = None
         self.results = None
 
-    def run_grid_search(self):
-        df_parameters = self._get_parameter_table_by_grid_search()
+    def run_grid_search(self) -> pd.DataFrame:
+        df_parameters = self._get_parameter_table_for_grid_search()
         return self._run_search(df_parameters)
 
-    def run_random_search(self, n_iterations=10):
-        df_parameters = self._get_parameter_table_by_random_search(n_iterations)
+    def run_random_search(self, n_iterations: int = 10) -> pd.DataFrame:
+        df_parameters = self._get_parameter_table_for_random_search(n_iterations)
         return self._run_search(df_parameters)
 
-    def get_best_learner(self):
+    def get_best_learner(self) -> BaseLearner:
         index = self.results.iloc[0].name
         return self.learner_candidates[index]
 
-    def _run_search(self, df):
+    def get_best_parameters(self) -> dict:
+        best_results = self.results.iloc[0]
+        return best_results[self.parameter_options.keys()].to_dict()
+
+    def _run_search(self, df: pd.DataFrame) -> pd.DataFrame:
         lowest_validation_losses, times = [], []
         self.learner_candidates = []
         for row in df.itertuples():
@@ -50,11 +60,11 @@ class ModelOptimizer:
         self.results = df
         return df
 
-    def _get_parameter_table_by_grid_search(self):
+    def _get_parameter_table_for_grid_search(self) -> pd.DataFrame:
         return pd.DataFrame(itertools.product(*self.parameter_options.values()),
                             columns=self.parameter_options.keys())
 
-    def _get_parameter_table_by_random_search(self, n_iterations):
+    def _get_parameter_table_for_random_search(self, n_iterations: int) -> pd.DataFrame:
         parameters = []
         for _ in range(n_iterations):
             parameter_set = {}
