@@ -53,7 +53,9 @@ class BaseInterpreter:
         probabilities = probabilities[indices]
         labels = self.get_labels()[indices]
         image = self.images[sample]
-        true_label = [self.mapper[item] for item in self.y_true[sample]]
+        predicted_label = sorted([self.mapper[item] for item in self.y_pred[sample]])
+        true_label = sorted([self.mapper[item] for item in self.y_true[sample]])
+        title = f'Predicted: {predicted_label}\nTrue: {true_label}'
 
         plt.figure()
         plt.subplot(1, 2, 1)
@@ -61,7 +63,7 @@ class BaseInterpreter:
         plt.xlim(0, 1)
         plt.grid()
         plt.subplot(1, 2, 2)
-        self.show_image(image, f' True label: {true_label}')
+        self.show_image(image, title)
 
     def plot_most_incorrect_samples(self, n_samples: int):
         samples = self.get_most_incorrect_samples(n_samples).index
