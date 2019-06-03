@@ -94,6 +94,9 @@ class ImageData:
         }
         return options.get(data_set_name)
 
+    def get_number_of_samples(self, data_set_name):
+        return len(self.get_data_set(data_set_name))
+
     def _convert_classes_to_labels(self, classes):
         return [self.class_to_label_mapping[c] for c in classes]
 
