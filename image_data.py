@@ -14,9 +14,10 @@ class ImageData:
 
     def __init__(self,
                  image_data: List[dict],
-                 indices_training: List[int],
-                 indices_validation: List[int],
-                 indices_test: List[int],
+                 p_training: float = 0.5,
+                 p_valid: float = 0.25,
+                 p_test: float = 0.25,
+                 randomize: bool = True,
                  ):
         self.labels = None
         self.label_to_class_mapping = None
@@ -25,16 +26,15 @@ class ImageData:
         self.validation_data = None
         self.test_data = None
 
-        self.data_set_options = {
-            'training': self.training_data,
-            'validation': self.validation_data,
-            'test': self.test_data
-        }
-
         self.input_image_data = image_data
+        self.p_training = p_training
+        self.p_validation = p_valid
+        self.p_test = p_test
+        self.randomize = randomize
+
         self.get_label_mappings()
         self.convert_labels_to_integers()
-        self.divide_data_to_sets(indices_training, indices_validation, indices_test)
+        self.divide_data_to_sets()
 
     def make_batches(self, data_set_name, batch_size):
         self.data = self.get_data_set(data_set_name)
@@ -61,10 +61,26 @@ class ImageData:
         self.label_to_class_mapping = {label: idx for idx, label in enumerate(self.labels)}
         self.class_to_label_mapping = {v: k for k, v in self.label_to_class_mapping.items()}
 
-    def divide_data_to_sets(self, indices_train: List[int], indices_validation: List[int], indices_test: List[int]):
+    def divide_data_to_sets(self, ):
+        indices_train, indices_valid, indices_test = self.get_indices_of_sets()
         self.training_data = [self.input_image_data[i] for i in indices_train]
-        self.validation_data = [self.input_image_data[i] for i in indices_validation]
+        self.validation_data = [self.input_image_data[i] for i in indices_valid]
         self.test_data = [self.input_image_data[i] for i in indices_test]
+
+    def get_indices_of_sets(self):
+        indices = list(range(len(self.input_image_data)))
+        if self.randomize:
+            shuffle(indices)
+
+        n_train = floor(self.p_training * len(indices))
+        n_validation = floor(self.p_validation * len(indices))
+        n_test = floor(self.p_test * len(indices))
+
+        indices_train = indices[:n_train]
+        indices_validation = indices[n_train:n_train + n_validation]
+        indices_test = indices[n_train + n_validation:n_train + n_validation + n_test]
+
+        return indices_train, indices_validation, indices_test
 
     def get_image(self, index, data_set_name):
         data = self.get_data_set(data_set_name)
