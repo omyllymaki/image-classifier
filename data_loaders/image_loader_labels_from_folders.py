@@ -26,7 +26,7 @@ class ImageLoaderFromFolders(ImageLoaderInterface):
                     dir_path: str,
                     file_extension: str = 'jpg') -> list:
         file_paths = self._get_file_paths(dir_path, file_extension)
-        images = self._load_images_from_file_paths(file_paths)
+        images, _ = self._load_images_from_file_paths(file_paths)
         return images
 
     def _get_file_names_from_sub_folders(self, path: str, file_extension: str) -> Dict[str, List[str]]:
@@ -53,13 +53,14 @@ class ImageLoaderFromFolders(ImageLoaderInterface):
 
     def _load_images_from_file_paths(self, file_paths: List[str]):
         n_files = len(file_paths)
-        images = []
+        images, file_paths_out = [], []
         for index, file_path in enumerate(file_paths, 1):
             image = self._open_image(file_path)
             if self._is_image_valid(image):
                 images.append(image.copy())
+                file_paths_out.append(file_path)
             logger.info(f'{index}/{n_files} images loaded')
-        return images
+        return images, file_paths_out
 
     @staticmethod
     def _is_image_valid(image):
