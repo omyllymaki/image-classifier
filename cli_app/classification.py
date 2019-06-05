@@ -4,7 +4,7 @@ import shutil
 
 from data_loaders.image_loader_labels_from_folders import ImageLoaderFromFolders
 from file_io import load_pickle_file
-from image_transforms import IMAGE_TRANSFORMS
+from image_transforms import TransformsTest
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def classify_images(model_path: str,
     images = loader.load_images(source_path, file_type)
 
     logger.info('Start image classification')
-    predicted_classes, probabilities = model.predict(images, IMAGE_TRANSFORMS['test'])
+    predicted_classes, probabilities = model.predict(images, TransformsTest)
 
     logger.info('Copy images to target path')
     file_paths = loader._get_file_paths(source_path, file_type)

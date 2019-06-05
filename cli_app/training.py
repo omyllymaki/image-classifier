@@ -3,7 +3,7 @@ import logging
 from data_loaders.image_loader_labels_from_folders import ImageLoaderFromFolders
 from file_io import save_pickle_file
 from image_data import ImageData
-from image_transforms import IMAGE_TRANSFORMS
+from image_transforms import TransformsTest, TransformsTraining
 from interpreters.utils import get_interpreter
 from learners.utils import get_learner
 from model import get_pretrained_model_for_transfer_learning
@@ -34,8 +34,8 @@ def train_model(source_data_path: str,
 
     logger.info('Start model training')
     _, _ = learner.fit_model(image_data,
-                             image_transforms_training=IMAGE_TRANSFORMS['training'],
-                             image_transforms_validation=IMAGE_TRANSFORMS['validation'],
+                             image_transforms_training=TransformsTraining,
+                             image_transforms_validation=TransformsTest,
                              batch_size=batch_size,
                              epochs=epochs,
                              learning_rate=learning_rate,
@@ -49,7 +49,7 @@ def train_model(source_data_path: str,
     logger.info('Evaluating model performance')
     images = image_data.get_images('validation')
     true_classes = image_data.get_classes('validation')
-    predicted_classes, probabilities = learner.predict(images, IMAGE_TRANSFORMS['validation'])
+    predicted_classes, probabilities = learner.predict(images, TransformsTest)
 
     Interpreter = get_interpreter(is_multilabel)
     interpreter = Interpreter(images, predicted_classes, true_classes, probabilities, learner.class_to_label_mapping)
