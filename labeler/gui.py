@@ -18,11 +18,12 @@ class Labeler:
         self.learner = learner
         self.index = 0
         self.df = None
-        self.disable_query_button = True
+        self.df_results = None
+        self.disable_model_related_buttons = True
 
         if self.learner:
-            self.controller = RecommenderSystem(labels, learner)
-            self.disable_query_button = False
+            self.recommender_system = RecommenderSystem(labels, learner)
+            self.disable_model_related_buttons = False
 
         self.create_ui_elements()
         self.create_layout()
@@ -38,14 +39,16 @@ class Labeler:
         self.label_buttons = []
         for label in self.labels:
             button = wg.Button(description=label, disabled=False)
-            button.checked = False
+            self.set_button_state(button, False)
             self.label_buttons.append(button)
 
         self.load_button = wg.Button(description="Load images for labeling")
         self.next_button = wg.Button(description="Next")
         self.save_labels_button = wg.Button(description="Save labels")
         self.save_labeled_images_button = wg.Button(description="Save labeled images")
-        self.query_button = wg.Button(description="Query samples", disabled=self.disable_query_button)
+        self.query_button = wg.Button(description="Query samples", disabled=self.disable_model_related_buttons)
+        self.suggest_button = wg.Button(description="Suggest", disabled=self.disable_model_related_buttons)
+        self.suggest_button.checked = False
 
         self.figure, self.axes = plt.subplots(figsize=(14, 6))
         self.axes.get_xaxis().set_visible(False)
@@ -53,7 +56,7 @@ class Labeler:
 
     def create_layout(self):
         self.layout = wg.VBox([
-            wg.HBox([self.load_button, self.save_labeled_images_button, self.query_button]),
+            wg.HBox([self.load_button, self.save_labeled_images_button, self.query_button, self.suggest_button]),
             wg.HBox([self.save_labels_button, self.next_button]),
             wg.HBox(self.label_buttons),
         ])
@@ -66,6 +69,7 @@ class Labeler:
         self.save_labels_button.on_click(self.handle_save_labels)
         self.save_labeled_images_button.on_click(self.handle_save_labeled_images)
         self.query_button.on_click(self.handle_query)
+        self.suggest_button.on_click(self.handle_suggest)
 
     def display(self):
         clear_output(wait=True)
@@ -90,8 +94,9 @@ class Labeler:
             button.style.button_color = 'lightgray'
 
     def handle_next(self, button=None):
-        self.uncheck_labels_buttons()
+        self.uncheck_label_buttons()
         self.update_index()
+        self.make_suggestion()
         self.display()
 
     def handle_load(self, button=None):
@@ -114,9 +119,17 @@ class Labeler:
             df_labeled[['file_name', 'labels_str']].to_csv(path, index=False, header=False)
 
     def handle_query(self, button=None):
-        samples = self.controller.query(self.df)
+        samples, confidences, predicted_labels = self.recommender_system.query(self.df)
+        self.df_results = pd.DataFrame({'sample': samples,
+                                        'confidence': confidences,
+                                        'predicted_label': predicted_labels})
+        self.df_results = self.df_results.set_index('sample')
+
         self.samples = iter(samples)
         self.handle_next()
+
+    def handle_suggest(self, button):
+        self.toggle_button(button)
 
     def update_index(self):
         try:
@@ -124,7 +137,20 @@ class Labeler:
         except StopIteration:
             pass
 
-    def uncheck_labels_buttons(self):
+    def make_suggestion(self):
+        if self.df_results is not None and self.suggest_button.checked:
+            labels = self.df_results.loc[self.index].predicted_label
+            self.check_label_buttons(labels)
+
+    def uncheck_label_buttons(self):
         for button in self.label_buttons:
-            button.checked = False
-            self.set_button_color(button)
+            self.set_button_state(button, False)
+
+    def check_label_buttons(self, labels):
+        for button in self.label_buttons:
+            if button.description in labels:
+                self.set_button_state(button, True)
+
+    def set_button_state(self, button, is_checked):
+        button.checked = is_checked
+        self.set_button_color(button)

@@ -16,9 +16,11 @@ class Recommender:
         self.learner = learner
 
     def query(self, images: list):
-        confidences = self._evaluate_unlabeled(images)
+        predicted_classes, confidences = self.evaluate_images(images)
         sorted_indices = self._get_most_uncertain_samples(confidences)
-        return sorted_indices
+        confidences = [confidences[i] for i in sorted_indices]
+        predicted_classes = [predicted_classes[i] for i in sorted_indices]
+        return sorted_indices, confidences, predicted_classes
 
     def train_model(self, data: List[dict]):
         image_data = ImageData(data, self.p_train, self.p_valid, 0.0)
@@ -32,11 +34,11 @@ class Recommender:
                                                       early_stop_option=USE_EARLY_STOP)
         self.min_valid_loss = np.min(losses_valid)
 
-    def _evaluate_unlabeled(self, images: list):
+    def evaluate_images(self, images: list):
         y_pred, probabilities = self.learner.predict(images, TransformsTest)
         probabilities = np.array(probabilities)
         confidences = np.sqrt(probabilities.shape[1]) * probabilities.std(axis=1, ddof=1)
-        return confidences
+        return y_pred, confidences
 
     def _get_most_uncertain_samples(self, confidences: List[float]):
         return np.argsort(confidences)

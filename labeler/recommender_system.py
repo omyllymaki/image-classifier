@@ -18,9 +18,14 @@ class RecommenderSystem:
     def query(self, df: pd.DataFrame):
         self.df = df
         self.train()
-        unlabeled_images = self.get_unlabeled_images()
-        indices = self.recommender.query(unlabeled_images)
-        return indices
+        unlabeled_data = self._get_unlabeled()
+        unlabeled_images = unlabeled_data.image.tolist()
+        indices, confidences, predicted_classes = self.recommender.query(unlabeled_images)
+
+        samples = unlabeled_data.iloc[indices].index.tolist()
+        predicted_labels = [[self.idx_to_label[item] for item in p] for p in predicted_classes]
+
+        return samples, confidences, predicted_labels
 
     def get_images_with_labels(self):
         labeled = self._get_labeled()
