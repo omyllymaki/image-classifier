@@ -1,4 +1,5 @@
 import os
+from random import shuffle
 
 import ipywidgets as wg
 import matplotlib.pyplot as plt
@@ -32,7 +33,9 @@ class Labeler:
     def initialize_dataframe(self):
         self.df = pd.DataFrame({'file_name': self.file_names, 'image': self.images})
         self.df['labels'] = None
-        self.samples = iter(self.df.index.tolist())
+        indices = self.df.index.tolist()
+        shuffle(indices)
+        self.samples = iter(indices)
         self.handle_next()
 
     def create_ui_elements(self):
