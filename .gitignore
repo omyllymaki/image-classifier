@@ -106,6 +106,5 @@ ENV/
 # Other
 .idea/
 git_ignore
-data
 model.p
 image_data.p

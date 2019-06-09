@@ -1,10 +1,59 @@
-# Photo Classifier
+# Image Classifier
 
-Photo classifier based on pretrained CNN model and transfer learning.
+Image classifier based on pretrained CNN model and transfer learning.
 
 Supports both single-label and multi-label classification.
 
-You can train your own classifier by downloading set of Google images for the target task.
+
+## Installation
+
+- Create virtual environment
+
+```
+virtualenv venv
+```
+
+- Activate virtual environment
+
+```
+.\venv\scripts\activate     (Windows)
+source venv/bin/activate    (Linux)
+```
+
+- Install requirements
+
+```
+pip install -r requirements.txt
+```
+
+Note: to install specific version of PyTorch, use installation instructions found from 
+
+https://pytorch.org/
+
+- Install new kernel
+
+```
+ipython kernel install --user --name=image-classifier
+```
+
+- Change kernel of notebooks to image-classifier
+
+## Basic usage
+
+**First try**
+
+Repo contains some test data (mugs / broken mugs / filled mugs). Train classifier to recognize 
+mugs by running model_training.ipynb notebook. After this, you can evaluate results by 
+running model_evaluation.ipynb. You should get about about 90 % accuracy with default parameters.
+
+**Train your own classifier for the target problem**
+
+- Get you own data set by running download_google_images.py script (more detailed instructions below)
+- Arrange data so that images are grouped to folders with label name as folder name
+- Train and evaluate classifier by running model_training and model_evaluation notebooks
+- Improve classifier accuracy by changing constant values in constants.py file. You can also try 
+hyperparameter tuning with hyperparameter_tuning notebook.
+
 
 ## Downloading Google images
 
@@ -19,6 +68,7 @@ Run download_google_images.py script to get images for classification task. This
 will create data folder containing images of specified image classes. By default, the
 script will load images of teddybears, grizzly bears and black bears.
 
+
 ## Notebooks
 
 **model_training.ipynb**
@@ -28,6 +78,15 @@ Loads image data and trains CNN model. Saves trained model as pickle file.
 **model_evaluation.ipynb**
 
 Loads trained model and evaluates results and performance of the model using holdout test set.
+
+**hyperparameter_tuning.ipynb**
+
+Testing and optimization of model hyperparameters.
+
+**image_labeling.ipynb**
+
+GUI tool for image labeling. Supports guided labeling (active learning).
+
 
 ## CLI app
 
