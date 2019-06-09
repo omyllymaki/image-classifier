@@ -14,10 +14,11 @@ from labeler.utils import open_files_dialog, save_file_dialog
 class Labeler:
 
     def __init__(self, labels, learner=None):
-        self.data_loader = ImageLoaderFromFolders()
         self.labels = labels
         self.learner = learner
-        self.index = 0
+
+        self.data_loader = ImageLoaderFromFolders()
+        self.sample_index = 0
         self.df = None
         self.df_results = None
         self.disable_model_related_buttons = True
@@ -39,12 +40,7 @@ class Labeler:
         self.handle_next()
 
     def create_ui_elements(self):
-        self.label_buttons = []
-        for label in self.labels:
-            button = wg.Button(description=label, disabled=False)
-            self.set_button_state(button, False)
-            self.label_buttons.append(button)
-
+        self.create_label_buttons()
         self.load_button = wg.Button(description="Load images for labeling")
         self.next_button = wg.Button(description="Next")
         self.save_labels_button = wg.Button(description="Save labels")
@@ -52,10 +48,19 @@ class Labeler:
         self.query_button = wg.Button(description="Query samples", disabled=self.disable_model_related_buttons)
         self.suggest_button = wg.Button(description="Suggest", disabled=self.disable_model_related_buttons)
         self.suggest_button.checked = False
+        self.create_figure()
 
+    def create_figure(self):
         self.figure, self.axes = plt.subplots(figsize=(14, 6))
         self.axes.get_xaxis().set_visible(False)
         self.axes.get_yaxis().set_visible(False)
+
+    def create_label_buttons(self):
+        self.label_buttons = []
+        for label in self.labels:
+            button = wg.Button(description=label, disabled=False)
+            self.set_button_state(button, False)
+            self.label_buttons.append(button)
 
     def create_layout(self):
         self.layout = wg.VBox([
@@ -77,10 +82,8 @@ class Labeler:
     def display(self):
         clear_output(wait=True)
         if self.df is not None:
-            self.figure, self.axes = plt.subplots(figsize=(14, 6))
-            self.axes.get_xaxis().set_visible(False)
-            self.axes.get_yaxis().set_visible(False)
-            self.axes.imshow(self.df.image.loc[self.index])
+            self.create_figure()
+            self.axes.imshow(self.df.image.loc[self.sample_index])
         display(self.layout)
 
     def run(self):
@@ -99,7 +102,7 @@ class Labeler:
     def handle_next(self, button=None):
         self.uncheck_label_buttons()
         self.update_index()
-        self.make_suggestion()
+        self.suggest_labels()
         self.display()
 
     def handle_load(self, button=None):
@@ -111,23 +114,23 @@ class Labeler:
 
     def handle_save_labels(self, button=None):
         selected_labels = [b.description for b in self.label_buttons if b.checked]
-        self.df.loc[self.index, 'labels'] = selected_labels
+        self.df.loc[self.sample_index, 'labels'] = selected_labels
         self.handle_next()
 
     def handle_save_labeled_images(self, button=None):
         path = save_file_dialog()
         if path:
-            df_labeled = self.df[~self.df.labels.isnull()]
+            df_labeled = self.get_labeled_data()
             df_labeled['labels_str'] = df_labeled.labels.apply(lambda x: ', '.join(x))
             df_labeled[['file_name', 'labels_str']].to_csv(path, index=False, header=False)
 
+    def get_labeled_data(self):
+        return self.df[~self.df.labels.isnull()]
+
     def handle_query(self, button=None):
         samples, confidences, predicted_labels = self.recommender_system.query(self.df)
-        self.df_results = pd.DataFrame({'sample': samples,
-                                        'confidence': confidences,
-                                        'predicted_label': predicted_labels})
-        self.df_results = self.df_results.set_index('sample')
-
+        self.df_results = pd.DataFrame({'confidence': confidences, 'predicted_label': predicted_labels},
+                                       index=samples)
         self.samples = iter(samples)
         self.handle_next()
 
@@ -136,13 +139,13 @@ class Labeler:
 
     def update_index(self):
         try:
-            self.index = next(self.samples)
+            self.sample_index = next(self.samples)
         except StopIteration:
             pass
 
-    def make_suggestion(self):
+    def suggest_labels(self):
         if self.df_results is not None and self.suggest_button.checked:
-            labels = self.df_results.loc[self.index].predicted_label
+            labels = self.df_results.loc[self.sample_index].predicted_label
             self.check_label_buttons(labels)
 
     def uncheck_label_buttons(self):
