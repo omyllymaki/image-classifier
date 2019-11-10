@@ -4,8 +4,9 @@ Image classifier based on pretrained CNN model and transfer learning.
 
 Supports both single-label and multi-label classification.
 
-
 ## Installation
+
+- Install Python 3.6
 
 - Create virtual environment
 
@@ -49,7 +50,8 @@ running model_evaluation.ipynb. You should get about about 90 % accuracy with de
 **Train your own classifier for the target problem**
 
 - Get you own data set by running download_google_images.py script (more detailed instructions below)
-- Arrange data so that images are grouped to folders with label name as folder name
+- Arrange data so that images are grouped to folders with label name as folder name (see mugs data for example)
+- Change SOURCE_DATA_PATH in constants.py to point to your data
 - Train and evaluate classifier by running model_training and model_evaluation notebooks
 - Improve classifier accuracy by changing constant values in constants.py file. You can also try 
 hyperparameter tuning with hyperparameter_tuning notebook.
