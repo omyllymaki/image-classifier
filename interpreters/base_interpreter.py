@@ -22,7 +22,7 @@ class BaseInterpreter:
 
         self.y_true_labels = self.convert_classes_to_labels(y_true)
         self.y_pred_labels = self.convert_classes_to_labels(y_pred)
-        one_hot_encoder = MultiLabelBinarizer()
+        one_hot_encoder = MultiLabelBinarizer(list(mapper.keys()))
         self.y_pred_one_hot_encoded = one_hot_encoder.fit_transform(y_pred)
         self.y_true_one_hot_encoded = one_hot_encoder.fit_transform(y_true)
         self.is_correct_array = self.calculate_is_correct_array()
