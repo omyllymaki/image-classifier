@@ -12,13 +12,10 @@ logger = logging.getLogger(__name__)
 class ImageLoaderFromCSV(ImageLoaderFromFolders):
 
     def load_images_with_labels(self,
-                                path: str,
+                                labels_file_path: str,
                                 file_extension: str = 'jpg',
                                 split_labels_by: str = ',',
-                                labels_file_path=None,
                                 is_header=False) -> List[dict]:
-        if not labels_file_path:
-            labels_file_path = os.path.join(path, 'labels.csv')
         if is_header:
             header = 'infer'
         else:
@@ -28,8 +25,8 @@ class ImageLoaderFromCSV(ImageLoaderFromFolders):
         data = []
         for i, row in df.iterrows():
             labels = [label.strip() for label in row.iloc[1].split(split_labels_by)]
-            file_path = os.path.join(path, row.iloc[0])
-            image = self._open_image(file_path)
+            image_path = row.iloc[0]
+            image = self._open_image(image_path)
             if self._is_image_valid(image):
                 data.append({'x': image.copy(), 'y': labels})
 
